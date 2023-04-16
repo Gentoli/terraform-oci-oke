@@ -10,9 +10,9 @@ locals {
   vcn_cidr = element(data.oci_core_vcn.vcn.cidr_blocks, 0)
 
   # subnet cidrs - used by subnets
-  bastion_subnet = var.create_bastion ? cidrsubnet(local.vcn_cidr, lookup(var.subnets["bastion"], "newbits",13), lookup(var.subnets["bastion"], "netnum",0)) : ""
-  
-  cp_subnet = cidrsubnet(local.vcn_cidr, lookup(var.subnets["cp"], "newbits",13), lookup(var.subnets["cp"], "netnum",1))
+  bastion_subnet = var.create_bastion ? cidrsubnet(local.vcn_cidr, lookup(var.subnets["bastion"], "newbits", 13), lookup(var.subnets["bastion"], "netnum", 0)) : ""
+
+  cp_subnet = cidrsubnet(local.vcn_cidr, lookup(var.subnets["cp"], "newbits", 13), lookup(var.subnets["cp"], "netnum", 1))
 
   int_lb_subnet = cidrsubnet(local.vcn_cidr, lookup(var.subnets["int_lb"], "newbits"), lookup(var.subnets["int_lb"], "netnum"))
 
@@ -25,6 +25,38 @@ locals {
   pods_subnet = cidrsubnet(local.vcn_cidr, lookup(var.subnets["pods"], "newbits"), lookup(var.subnets["pods"], "netnum"))
 
   fss_subnet = cidrsubnet(local.vcn_cidr, lookup(var.subnets["fss"], "newbits"), lookup(var.subnets["fss"], "netnum"))
+
+  subnet_default_names = {
+    "cp" : "control-plane"
+    "pods" : "pods"
+    "workers" : "workers"
+    "int_lb" : "int-lb"
+    "pub_lb" : "pub-lb"
+  }
+
+  subnet_default_dns_labels = {
+    "cp" : "cp"
+    "pods" : "po"
+    "workers" : "wo"
+    "int_lb" : "ilb"
+    "pub_lb" : "plb"
+  }
+
+  subnet_display_names = {
+    for network_id, default in local.subnet_default_names :
+    network_id =>
+    lookup(var.subnets[network_id], "display_name",
+      var.label_prefix == "none" ? default : "${var.label_prefix}-${default}"
+    )
+  }
+
+  subnet_dns_label = {
+    for network_id, default in local.subnet_default_dns_labels :
+    network_id =>
+    lookup(var.subnets[network_id], "dns_label",
+      var.assign_dns ? default : null
+    )
+  }
 
   anywhere = "0.0.0.0/0"
 
@@ -333,7 +365,9 @@ locals {
   ]
 
   # Combine supplied allow list and the public load balancer subnet
-  internal_lb_allowed_cidrs = var.load_balancers == "both" ? concat(var.internal_lb_allowed_cidrs, tolist([local.pub_lb_subnet])) : var.internal_lb_allowed_cidrs
+  internal_lb_allowed_cidrs = var.load_balancers == "both" ? concat(var.internal_lb_allowed_cidrs, tolist([
+    local.pub_lb_subnet
+  ])) : var.internal_lb_allowed_cidrs
 
   # Create a Cartesian product of allowed cidrs and ports
   internal_lb_allowed_cidrs_and_ports = setproduct(local.internal_lb_allowed_cidrs, var.internal_lb_allowed_ports)
