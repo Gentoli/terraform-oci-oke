@@ -4,7 +4,7 @@
 curl --fail -H "Authorization: Bearer Oracle" -L0 http://169.254.169.254/opc/v2/instance/metadata/oke_init_script | base64 --decode >/var/run/oke-init.sh
 
 ## run oke provisioning script
-bash -x /var/run/oke-init.sh
+bash -x /var/run/oke-init.sh ${extra_init_args}
 
 ### adjust block volume size
 /usr/libexec/oci-growfs -y
