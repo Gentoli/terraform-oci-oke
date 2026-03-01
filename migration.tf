@@ -28,12 +28,16 @@ moved {
   to   = module.network.oci_core_subnet.oke["workers"]
 }
 moved {
-  from = module.network.oci_core_subnet.pods
+  from = module.network.oci_core_subnet.pods[0]
   to   = module.network.oci_core_subnet.oke["pods"]
 }
 moved {
-  from = module.network.oci_core_subnet.fss
+  from = module.storage[0].oci_core_subnet.fss
   to   = module.network.oci_core_subnet.oke["fss"]
+}
+moved {
+  from = module.storage[0].oci_core_network_security_group.fss_mt
+  to   = module.network.oci_core_network_security_group.fss[0]
 }
 
 # Cluster
