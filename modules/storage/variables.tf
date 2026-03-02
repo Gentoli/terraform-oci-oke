@@ -35,3 +35,10 @@ variable "max_fs_stat_bytes" {}
 
 # Controls the maximum tfiles, ffiles, and afiles values reported by NFS FSSTAT calls through any associated mount targets.
 variable "max_fs_stat_files" {}
+
+variable "nsg_id" {
+  type        = string
+}
+variable "subnet_id" {
+  type        = string
+}

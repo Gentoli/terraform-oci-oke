@@ -39,14 +39,14 @@ module "storage" {
   # general oci parameters
   tenancy_id          = local.tenancy_id
   compartment_id      = local.compartment_id
-  availability_domain = var.availability_domains["fss"]
-  label_prefix        = var.label_prefix
+  availability_domain = var.fss_availability_domains
+  label_prefix = ""
 
   # FSS network information
   subnets      = var.subnets
   assign_dns   = var.assign_dns
   vcn_id       = local.vcn_id
-  nat_route_id = local.nat_route_id
+  nat_route_id = local.nat_route_table_id
 
   fss_mount_path = var.fss_mount_path
 
@@ -60,6 +60,8 @@ module "storage" {
 
   count = var.create_fss == true ? 1 : 0
 
+  subnet_id = module.network.fss_subnet_id
+  nsg_id    = module.network.fss_nsg_id
 }
 
 #fss
@@ -67,6 +69,11 @@ variable "create_fss" {
   description = "Whether to enable provisioning for FSS"
   default     = false
   type        = bool
+}
+
+variable "fss_availability_domains" {
+  description = "Availability Domains where to provision non-OKE resources"
+  default     = 1
 }
 
 # fss mount path
